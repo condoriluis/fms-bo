@@ -1,7 +1,7 @@
 # FMS-BO: Gestor de Archivos en la Nube
 
 ## Descripción
-FMS-BO es una plataforma web para la gestión y almacenamiento de archivos en la nube. Permite a los usuarios subir, listar, buscar, filtrar, renombrar, copiar enlaces y eliminar archivos de manera sencilla y segura.
+FMS-BO es una plataforma web (SPA) para la gestión y almacenamiento de archivos en la nube. Permite a los usuarios subir, listar, buscar, filtrar, renombrar, copiar enlaces y eliminar archivos de manera sencilla y segura.
 
 ## Características principales
 - Soporte para múltiples servicios de almacenamiento: Server local, AWS S3, Cloudinary y Mailchimp.
@@ -59,7 +59,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/tuusuario/fms-bo.git
+   git clone https://github.com/condoriluis/fms-bo.git
    cd fms-bo
    ```
 2. Instala las dependencias:
