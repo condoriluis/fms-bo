@@ -25,7 +25,7 @@ export function FileGrid({
     handleDelete
 }: FileGridProps) {
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {displayedFiles.length === 0 ? (
                 <div className="col-span-full text-center py-10 text-muted-foreground italic bg-muted/30 rounded-lg border border-dashed">
                     No hay archivos disponibles en este momento.

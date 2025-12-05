@@ -13,16 +13,16 @@ export const getFileIcon = (extension: string, size: 'sm' | 'md' | 'lg' = 'md') 
 
     switch (ext) {
         case 'pdf':
-            return <FileText className={`${iconSize} text-red-500`} />;
+            return <img src="assets/images/icons/pdf.png" className="w-18 h-22" alt={ext} />;
         case 'zip':
-            return <FileArchive className={`${iconSize} text-yellow-500`} />;
+            return <img src="assets/images/icons/zip.png" className="w-18 h-22" alt={ext} />;
         case 'txt':
-            return <FileText className={`${iconSize} text-gray-500`} />;
+            return <img src="assets/images/icons/txt.png" className="w-18 h-22" alt={ext} />;
         case 'mp3':
         case 'wav':
-            return <Music className={`${iconSize} text-purple-500`} />;
+            return <img src="assets/images/icons/mpeg.png" className="w-18 h-22" alt={ext} />;
         default:
-            return <File className={`${iconSize} text-blue-500`} />;
+            return <img src="assets/images/icons/default.png" className="w-18 h-22" alt={ext} />;
     }
 };
 

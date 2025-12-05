@@ -34,9 +34,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!file.type.startsWith('image/')) {
+    const allowedTypes = [
+      'application/zip',
+      'text/plain',
+      'audio/mpeg',
+      'application/pdf',
+    ];
+    const isImage = file.type.startsWith('image/');
+    const isAllowed = allowedTypes.includes(file.type);
+
+    if (!isImage && !isAllowed) {
       return NextResponse.json(
-        { error: 'Solo se permiten archivos de imagen' },
+        { error: 'Solo se permiten archivos de imagen, zip, txt, mp3 o pdf' },
         { status: 400 }
       );
     }
