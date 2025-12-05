@@ -56,7 +56,7 @@ export const Header: React.FC = () => {
 
 						{user ? (
 							<div className="flex items-center gap-4">
-								<div className="hidden md:flex flex-col items-end">
+								<div className="flex flex-col md:items-end">
 									<span className="text-sm font-medium">{user.email}</span>
 									<span className="text-xs text-muted-foreground">Administrador</span>
 								</div>

@@ -73,7 +73,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 localStorage.removeItem("fms_remember_email");
             }
 
-            toast.success("Bienvenido de nuevo", {
+            toast.success("Bienvenido al sistema", {
                 description: "Has iniciado sesión correctamente.",
             });
             onClose();
@@ -95,11 +95,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogContent className="sm:max-w-[400px] overflow-hidden border border-border shadow-2xl rounded-xl bg-background">
-                <DialogHeader className="mb-6 space-y-2 text-center">
+                <DialogHeader className="mb-6 space-y-0 text-center">
                     <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2 ring-1 ring-primary/20">
                         <LogIn className="w-6 h-6 text-primary" />
                     </div>
-                    <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">Iniciar Sesión</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold tracking-tight text-foreground text-center">Iniciar Sesión</DialogTitle>
                     <DialogDescription className="text-muted-foreground">
                         Ingrese sus credenciales para acceder al sistema.
                     </DialogDescription>
@@ -162,10 +162,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                         </label>
                     </div>
 
-                    <div className="flex flex-col gap-3 pt-2">
+                    <div className="flex flex-row gap-3 pt-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-1/2"
+                            onClick={onClose}
+                            disabled={isLoading}
+                        >
+                            Cancelar
+                        </Button>
                         <Button
                             type="submit"
-                            className="w-full font-semibold shadow-md hover:shadow-lg transition-all"
+                            className="w-1/2 font-semibold shadow-md hover:shadow-lg transition-all"
                             disabled={isLoading}
                         >
                             {isLoading ? (
@@ -176,15 +185,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                             ) : (
                                 "Ingresar"
                             )}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            onClick={onClose}
-                            disabled={isLoading}
-                        >
-                            Cancelar
                         </Button>
                     </div>
                 </form>

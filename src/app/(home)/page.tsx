@@ -183,9 +183,9 @@ export default function FilesPage() {
                       {folderList.map(f => (
                         <Tooltip key={f}>
                           <TooltipTrigger asChild>
-                            <label className="flex items-center gap-1 w-1/2 sm:w-auto cursor-pointer">
+                            <label className="flex items-center gap-1 cursor-pointer">
                               <RadioGroupItem value={f} className="w-4 h-4 sm:w-5 sm:h-5" />
-                              <span className="text-sm sm:text-base">{f}</span>
+                              <span className="text-sm">{f}</span>
                             </label>
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="max-w-xs">
@@ -387,7 +387,15 @@ export default function FilesPage() {
 
                       <div className="flex items-center gap-1">
                         {file.selected && file.__originalFile ? (
-                          <Button
+                          uploading ? (
+                            <div className="flex items-center justify-center">
+                              <svg className="w-4 h-4 animate-spin text-blue-600" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4l-3 3 3 3h-4z"></path>
+                              </svg>
+                            </div>
+                         ) : (
+                            <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
@@ -399,6 +407,7 @@ export default function FilesPage() {
                           >
                             X Clear
                           </Button>
+                          )
                         ) : (
                           <>
                             <Button
