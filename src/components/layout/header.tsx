@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { ThemeSwitch } from "@/components/ui/theme-switch";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { supabaseClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -46,14 +45,14 @@ export const Header: React.FC = () => {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="h-16 flex items-center justify-between">
 					<Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
-						<div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-							<span className="font-bold text-primary">FM</span>
+						<div className="w-14 h-8 md:w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+							<span className="font-bold text-primary block md:hidden">FMS</span>
+							<span className="font-bold text-primary hidden md:block">FM</span>
 						</div>
-						<div className="text-lg font-bold tracking-tight">File Manager System</div>
+						<div className="text-lg font-bold tracking-tight hidden md:block">File Manager System</div>
 					</Link>
 
 					<div className="flex items-center gap-4">
-						<ThemeSwitch />
 
 						{user ? (
 							<div className="flex items-center gap-4">

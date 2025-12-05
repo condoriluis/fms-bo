@@ -1,4 +1,5 @@
 import { Header, Footer } from '@/components/layout';
+import { ThemeSwitch } from "@/components/ui/theme-switch";
 
 export default function RootLayout({
   children,
@@ -12,6 +13,9 @@ export default function RootLayout({
         {children}
       </main>
       <Footer />
+      <div className="fixed bottom-4 left-4 z-50">
+        <ThemeSwitch />
+      </div>
     </div>
   );
 }
