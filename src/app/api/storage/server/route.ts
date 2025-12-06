@@ -63,7 +63,6 @@ export async function POST(req: NextRequest) {
     const url = `${process.env.NEXT_PUBLIC_SITE_URL}/assets/images/${safeFileName}`;
     return NextResponse.json({ url });
   } catch (err) {
-    console.error(err);
     return NextResponse.json({ error: 'Error al subir el archivo' }, { status: 500 });
   }
 }

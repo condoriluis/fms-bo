@@ -223,8 +223,8 @@ export function useFilesPage() {
                 const response = JSON.parse(xhr.responseText);
 
                 if (folder === 'Mailchimp') {
-                  const url = response.data?.full_size_url;
-                  const mailchimpId = response.data?.id;
+                  const url = response.url;
+                  const mailchimpId = response.id;
                   if (!url || !mailchimpId) reject('No se obtuvo URL o ID de Mailchimp');
                   resolve({ url, mailchimpId });
                 } else {
@@ -336,7 +336,6 @@ export function useFilesPage() {
       toast.success('Archivo eliminado correctamente');
 
     } catch (err) {
-      console.error(err);
       toast.error('Error eliminando archivo');
     }
   };

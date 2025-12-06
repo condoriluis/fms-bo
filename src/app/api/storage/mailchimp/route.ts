@@ -51,9 +51,9 @@ export async function POST(req: NextRequest) {
       throw new Error(data.detail || 'Error uploading file to Mailchimp');
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ id: data.id, url: data.full_size_url });
+   
   } catch (err) {
-    console.error(err);
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
   }
 }
