@@ -29,9 +29,21 @@ export async function POST(req: NextRequest) {
     if (!apiKey) return NextResponse.json({ error: 'Falta la API KEY de Cloudinary' }, { status: 400 });
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    const mimeType = file.type;
+    const fileName = file.name;
+
+    let resource_type: "image" | "video" | "audio" | "raw" = "raw";
+
+    if (mimeType.startsWith("image/")) {
+      resource_type = "image";
+    } else if (mimeType.startsWith("video/") || mimeType.startsWith("audio/")) {
+      resource_type = "video";
+    } else {
+      resource_type = "raw";
+    }
 
     const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream({ folder: 'nextjs-files' }, (err, res) => {
+      const stream = cloudinary.uploader.upload_stream({ folder: 'files', resource_type, public_id: fileName.replace(/\.[^/.]+$/, ""), }, (err, res) => {
         if (err) reject(err);
         else resolve(res as any);
       });

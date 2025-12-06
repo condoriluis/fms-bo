@@ -196,6 +196,9 @@ export function useFilesPage() {
     const urls: string[] = [];
 
     try {
+
+      const uploadedFiles: UploadFile[] = [];
+
       for (const file of selectedFiles) {
         setUploadingProgress(prev => ({ ...prev, [file.name_file]: 0 }));
 
@@ -257,9 +260,7 @@ export function useFilesPage() {
           folder === 'Mailchimp' ? '/api/storage/mailchimp' : apiEndpoint
         );
 
-        urls.push(result.url);
-
-        await fetch('/api/archivos', {
+        const createResponse = await fetch('/api/archivos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -274,29 +275,30 @@ export function useFilesPage() {
           }),
         });
 
+        const createdFile = await createResponse.json();
+
+        const adaptedFile: UploadFile = {
+          id_file: createdFile.id_file,
+          name_file: createdFile.name_file,
+          name_folder_file: createdFile.name_folder_file,
+          extension_file: `.${createdFile.extension_file}`,
+          type_file: createdFile.type_file,
+          size_file: createdFile.size_file,
+          size_file_display: formatBytes(createdFile.size_file),
+          url_file: createdFile.url_file,
+          id_mailchimp: createdFile.id_mailchimp,
+          date_updated_file: createdFile.date_updated_file,
+          __originalName: createdFile.name_file,
+          preview: createdFile.url_file,
+        };
+        uploadedFiles.push(adaptedFile);
         setUploadingProgress(prev => ({ ...prev, [file.name_file]: 100 }));
 
       }
 
       toast.success('Archivos subidos correctamente');
 
-      const newFiles: UploadFile[] = selectedFiles.map((file, i) => ({
-        id_file: files.length + i + 1,
-        name_file: file.name_file.replace(/\.[^/.]+$/, ''),
-        name_folder_file: folder,
-        extension_file: '.' + file.name_file.split('.').pop(),
-        size_file: file.size_file,
-        size_file_display: (file.size_file / 1024 / 1024).toFixed(2) + ' MB',
-        type_file: file.type_file,
-        url_file: urls[i] || '',
-        date_updated_file: new Date(),
-
-        __originalName: file.name_file.replace(/\.[^/.]+$/, ''),
-        __originalFile: file.__originalFile,
-        preview: urls[i] || '',
-      }));
-
-      setFiles(prev => [...newFiles, ...prev]);
+      setFiles(prev => [...uploadedFiles, ...prev])
       setSelectedFiles([]);
       setChoosingFolder(false);
       setUploadingProgress({});

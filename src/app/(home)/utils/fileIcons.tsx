@@ -1,5 +1,3 @@
-import { FileText, FileArchive, Music, File } from 'lucide-react';
-
 export const getFileIcon = (extension: string, size: 'sm' | 'md' | 'lg' = 'md') => {
     const ext = extension.toLowerCase().replace('.', '');
 
