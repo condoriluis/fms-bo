@@ -159,7 +159,7 @@ export function FileGrid({
                                         variant="secondary"
                                         size="icon"
                                         className="h-6 w-6 text-muted-foreground hover:text-destructive cursor-pointer"
-                                        onClick={() => toast.warning('Debe iniciar sesión para eliminar archivos')}
+                                        onClick={() => toast.warning('No tienes permiso para realizar esta acción')}
                                     >
                                         <Trash className="w-3 h-3 text-destructive" />
                                     </Button>

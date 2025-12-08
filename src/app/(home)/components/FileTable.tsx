@@ -229,7 +229,7 @@ export function FileTable({
                                                     size="icon"
                                                     variant="secondary"
                                                     onClick={() => {
-                                                        toast.warning('Debe iniciar sesión para eliminar archivos');
+                                                        toast.warning('No tienes permiso para realizar esta acción');
                                                     }}
                                                     className="mt-4 h-8 w-8 rounded-full cursor-pointer"
                                                 >

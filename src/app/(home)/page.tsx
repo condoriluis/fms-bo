@@ -35,7 +35,7 @@ export default function FilesPage() {
 
   const handleUpdateFileName = async (file: any, newName: string) => {
     if (!user) {
-      toast.warning('Debe iniciar sesión para cambiar el nombre del archivo');
+      toast.warning('No tienes permiso para realizar esta acción');
       return;
     }
 
@@ -147,7 +147,7 @@ export default function FilesPage() {
                   onClick={() => {
                     if (!user) {
                       setIsLoginOpen(true);
-                      toast.info('Debe iniciar sesión para subir archivos');
+                      toast.info('No tienes permiso para realizar esta acción');
                     } else {
                       handleUpload();
                     }
@@ -452,7 +452,7 @@ export default function FilesPage() {
                                 variant="ghost"
                                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => {
-                                  toast.warning('Debe iniciar sesión para eliminar archivos');
+                                  toast.warning('No tienes permiso para realizar esta acción');
                                 }}
                               >
                                 <Trash className="w-4 h-4" />
