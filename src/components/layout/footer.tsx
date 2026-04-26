@@ -50,16 +50,25 @@ export const Footer: React.FC = () => {
             <p className="text-xs text-muted-foreground">Todos los derechos reservados.</p>
           </div>
 
-          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-muted/30 ring-1 ring-border/50">
-            <span className="text-xs text-muted-foreground">Tecnologías:</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-foreground">Next.js</span>
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <span className="text-xs font-semibold text-blue-500">TS</span>
-              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <span className="text-xs font-semibold text-sky-400">Tailwind</span>
-            </div>
+          <div className="flex flex-wrap items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-muted/30 ring-1 ring-border/50">
+            <span className="text-xs text-muted-foreground mr-1">Stack:</span>
+            {[
+              { label: "Next.js 16", color: "text-foreground" },
+              { label: "TypeScript", color: "text-blue-500" },
+              { label: "Prisma", color: "text-indigo-400" },
+              { label: "Supabase", color: "text-emerald-500" },
+              { label: "Tailwind", color: "text-sky-400" },
+              { label: "AWS S3", color: "text-orange-400" },
+              { label: "Cloudinary", color: "text-blue-400" },
+              { label: "Mailchimp", color: "text-yellow-500" },
+            ].map((tech, i, arr) => (
+              <span key={tech.label} className="flex items-center gap-1.5">
+                <span className={`text-xs font-semibold ${tech.color}`}>{tech.label}</span>
+                {i < arr.length - 1 && <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />}
+              </span>
+            ))}
           </div>
+
         </div>
       </div>
     </footer>

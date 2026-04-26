@@ -55,6 +55,7 @@
     "eslint-config-next": "15.3.0",
     "lint-staged": "^16.0.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
+    "prisma": "^6.19.3",
     "shadcn": "^2.5.0",
     "tailwindcss": "^4",
     "tsx": "^4.19.4",

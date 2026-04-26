@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='es' suppressHydrationWarning>
-      <body className={cn(fontVariables, 'antialiased')}>
+      <body className={cn(fontVariables, 'antialiased')} suppressHydrationWarning>
         <RootProvider>
           {children}
         </RootProvider>

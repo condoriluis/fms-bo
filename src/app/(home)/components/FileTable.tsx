@@ -29,6 +29,7 @@ export function FileTable({
             <table className="min-w-full table-auto border-collapse">
                 <thead className="border-b">
                     <tr>
+                        <th className="px-4 py-2 text-left text-muted-foreground text-sm w-10">#</th>
                         <th className="px-4 py-2 text-left">Preview</th>
                         <th className="px-4 py-2 text-left">Name</th>
                         <th className="px-4 py-2 text-left">Size</th>
@@ -41,13 +42,16 @@ export function FileTable({
                 <tbody>
                     {displayedFiles.length === 0 ? (
                         <tr>
-                            <td colSpan={7} className="text-center py-6 text-gray-500 italic">
+                            <td colSpan={8} className="text-center py-6 text-gray-500 italic">
                                 No hay archivos disponibles en este momento.
                             </td>
                         </tr>
                     ) : (
-                        displayedFiles.map(file => (
+                        displayedFiles.map((file, index) => (
                             <tr key={file.id_file || file.id_temp}>
+                                <td className="px-4 py-2 text-sm font-mono text-muted-foreground text-center w-10">
+                                    {displayedFiles.length - index}
+                                </td>
                                 <td className="px-4 py-2">
                                     <div className="flex items-center gap-3">
                                         <div className="group flex-shrink-0 flex items-center justify-center w-24 h-24 rounded-lg border border-gray-200 dark:border-neutral-700 shadow-sm bg-muted overflow-hidden">

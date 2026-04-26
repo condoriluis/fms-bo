@@ -4,8 +4,30 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { UploadFile } from '@/lib/constants/typeFile';
 
-export function useFilesPage() {
-  const [files, setFiles] = useState<UploadFile[]>([]);
+export function useFilesPage(initialFiles: any[] = []) {
+  const formatBytes = (bytes: number) => {
+    if (!bytes) return '0 MB';
+    const mb = bytes / (1024 * 1024);
+    return mb.toFixed(2) + ' MB';
+  };
+
+  const adaptedInitialFiles = initialFiles.map((f: any) => ({
+    id_file: f.id_file,
+    name_file: f.name_file,
+    name_folder_file: f.name_folder_file,
+    extension_file: `.${f.extension_file.replace(/^\./, '')}`,
+    type_file: f.type_file,
+    size_file: f.size_file,
+    size_file_display: formatBytes(f.size_file),
+    url_file: f.url_file,
+    id_mailchimp: f.id_mailchimp,
+    date_updated_file: f.date_updated_file,
+
+    __originalName: f.name_file,
+    preview: f.url_file,
+  }));
+
+  const [files, setFiles] = useState<UploadFile[]>(adaptedInitialFiles);
   const [search, setSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(10);
 
@@ -23,46 +45,10 @@ export function useFilesPage() {
     Object.fromEntries(folderList.map(f => [f, true]))
   );
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      try {
+  // Eliminamos el useEffect que hacía el fetch inicial
+  // ya que ahora la data viene directamente del servidor de forma instantánea.
 
-        const res = await fetch('/api/archivos');
-        if (!res.ok) throw new Error('Error al obtener archivos');
 
-        const data: UploadFile[] = await res.json();
-
-        const adapted = data.map((f: any) => ({
-          id_file: f.id_file,
-          name_file: f.name_file,
-          name_folder_file: f.name_folder_file,
-          extension_file: `.${f.extension_file}`,
-          type_file: f.type_file,
-          size_file: f.size_file,
-          size_file_display: formatBytes(f.size_file),
-          url_file: f.url_file,
-          id_mailchimp: f.id_mailchimp,
-          date_updated_file: f.date_updated_file,
-
-          __originalName: f.name_file,
-          preview: f.url_file,
-        }));
-
-        setFiles(adapted);
-
-      } catch (err) {
-        toast.error('No se pudieron cargar los archivos');
-      }
-    };
-
-    fetchFiles();
-  }, []);
-
-  const formatBytes = (bytes: number) => {
-    if (!bytes) return '0 MB';
-    const mb = bytes / (1024 * 1024);
-    return mb.toFixed(2) + ' MB';
-  };
 
   const combinedFiles: UploadFile[] = [
     ...selectedFiles.map((file, i) => ({

@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model File {
+  id_file           Int       @id @default(autoincrement())
+  name_file         String
+  name_folder_file  String
+  extension_file    String
+  type_file         String
+  size_file         Int
+  url_file          String
+  id_mailchimp      Int?
+  date_created_file DateTime  @default(now())
+  date_updated_file DateTime  @updatedAt
+
+  @@map("files")
+}
