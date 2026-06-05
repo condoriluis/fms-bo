@@ -3,28 +3,29 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { UploadFile } from '@/lib/constants/typeFile';
+import { type FileRecord } from '@/lib/file-service';
 
-export function useFilesPage(initialFiles: any[] = []) {
+export function useFilesPage(initialFiles: FileRecord[] = []) {
   const formatBytes = (bytes: number) => {
     if (!bytes) return '0 MB';
     const mb = bytes / (1024 * 1024);
     return mb.toFixed(2) + ' MB';
   };
 
-  const adaptedInitialFiles = initialFiles.map((f: any) => ({
+  const adaptedInitialFiles: UploadFile[] = initialFiles.map((f: FileRecord) => ({
     id_file: f.id_file,
-    name_file: f.name_file,
-    name_folder_file: f.name_folder_file,
-    extension_file: `.${f.extension_file.replace(/^\./, '')}`,
-    type_file: f.type_file,
-    size_file: f.size_file,
-    size_file_display: formatBytes(f.size_file),
-    url_file: f.url_file,
-    id_mailchimp: f.id_mailchimp,
-    date_updated_file: f.date_updated_file,
+    name_file: f.name_file ?? '',
+    name_folder_file: f.name_folder_file ?? '',
+    extension_file: `.${(f.extension_file ?? '').replace(/^\./, '')}`,
+    type_file: f.type_file ?? '',
+    size_file: f.size_file ?? 0,
+    size_file_display: formatBytes(f.size_file ?? 0),
+    url_file: f.url_file ?? '',
+    id_mailchimp: f.id_mailchimp ?? undefined,
+    date_updated_file: f.date_updated_file ?? new Date(),
 
-    __originalName: f.name_file,
-    preview: f.url_file,
+    __originalName: f.name_file ?? '',
+    preview: f.url_file ?? '',
   }));
 
   const [files, setFiles] = useState<UploadFile[]>(adaptedInitialFiles);
@@ -267,13 +268,13 @@ export function useFilesPage(initialFiles: any[] = []) {
           id_file: createdFile.id_file,
           name_file: createdFile.name_file,
           name_folder_file: createdFile.name_folder_file,
-          extension_file: `.${createdFile.extension_file}`,
+          extension_file: `.${createdFile.extension_file.replace(/^\./, '')}`,
           type_file: createdFile.type_file,
           size_file: createdFile.size_file,
           size_file_display: formatBytes(createdFile.size_file),
           url_file: createdFile.url_file,
           id_mailchimp: createdFile.id_mailchimp,
-          date_updated_file: createdFile.date_updated_file,
+          date_updated_file: createdFile.date_updated_file ?? createdFile.date_created_file ?? new Date(),
           __originalName: createdFile.name_file,
           preview: createdFile.url_file,
         };

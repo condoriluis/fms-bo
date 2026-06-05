@@ -9,16 +9,47 @@ datasource db {
 }
 
 model File {
-  id_file           Int       @id @default(autoincrement())
-  name_file         String
-  name_folder_file  String
-  extension_file    String
-  type_file         String
-  size_file         Int
-  url_file          String
-  id_mailchimp      Int?
-  date_created_file DateTime  @default(now())
-  date_updated_file DateTime  @updatedAt
+  id_file           BigInt    @id @default(autoincrement())
+  name_file         String?
+  name_folder_file  String?
+  extension_file    String?
+  type_file         String?
+  size_file         Decimal?  @db.Decimal
+  url_file          String?
+  id_mailchimp      Decimal?  @db.Decimal
+  date_created_file DateTime  @default(now()) @db.Timestamptz(6)
+  date_updated_file DateTime? @db.Timestamptz(6)
 
   @@map("files")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(150)
+  password  String   @db.VarChar(255)
+  role      UserRole @default(ADMIN)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(150)
+  token     String   @unique @db.VarChar(255)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("password_reset_tokens")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+
+  @@map("users_role")
 }

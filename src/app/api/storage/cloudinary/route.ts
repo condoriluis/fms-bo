@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
-import { supabaseServer } from '@/lib/supabase/server';
+import { auth } from '@/lib/auth';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,10 +10,9 @@ cloudinary.config({
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const session = await auth();
 
-    if (authError || !user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Debe iniciar sesión para subir archivos' },
         { status: 401 }
@@ -58,10 +57,9 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const session = await auth();
 
-    if (authError || !user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Debe iniciar sesión para eliminar archivos' },
         { status: 401 }

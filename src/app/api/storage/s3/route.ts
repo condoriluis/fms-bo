@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { supabaseServer } from '@/lib/supabase/server';
+import { auth } from '@/lib/auth';
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -13,10 +13,9 @@ const s3 = new S3Client({
 export async function POST(req: NextRequest) {
   try {
 
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const session = await auth();
 
-    if (authError || !user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Debe iniciar sesión para subir archivos' },
         { status: 401 }
@@ -54,10 +53,9 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
 
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const session = await auth();
 
-    if (authError || !user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Debe iniciar sesión para eliminar archivos' },
         { status: 401 }
