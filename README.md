@@ -1,81 +1,46 @@
 # FMS-BO — File Manager System
 
-Plataforma web profesional para la gestión y almacenamiento de archivos en la nube. Permite subir, listar, buscar, filtrar, renombrar, copiar y eliminar archivos desde múltiples proveedores de almacenamiento.
+Plataforma web para la gestión y almacenamiento de archivos con múltiples proveedores cloud.
 
-## Características
-
-- 📁 Soporte multi-almacenamiento: **Server local**, **AWS S3**, **Cloudinary** y **Mailchimp**
-- 🔐 Autenticación de administrador con Supabase Auth
-- ⚡ Carga instantánea con Server-Side Rendering y Prisma ORM
-- 🖼️ Vistas de lista y cuadrícula con preview de imágenes
-- 🔍 Búsqueda, filtrado y ordenamiento avanzado
-- 📱 Interfaz completamente responsive (mobile + desktop)
-- 🌙 Tema claro / oscuro integrado
-
-## Stack tecnológico
+## Stack
 
 | Tecnología | Uso |
 |---|---|
-| Next.js 16 | Framework principal (App Router + SSR) |
-| TypeScript | Tipado estático |
-| Prisma ORM | Acceso a base de datos |
-| Supabase | Base de datos PostgreSQL + Autenticación |
-| Tailwind CSS v4 | Estilos |
-| AWS S3 | Almacenamiento de archivos |
-| Cloudinary | CDN multimedia |
-| Mailchimp | Archivos de marketing |
+| Next.js 16 + TypeScript | Framework (App Router) |
+| NextAuth v5 + bcrypt | Autenticación con JWT |
+| Prisma ORM + PostgreSQL | Base de datos (Supabase) |
+| Tailwind CSS v4 + shadcn/ui | Estilos y componentes |
+| AWS S3 / Cloudinary / Mailchimp | Almacenamiento de archivos |
+| react-hook-form + zod | Formularios y validación |
+| sonner + motion | Notificaciones y animaciones |
+| next-themes | Tema claro / oscuro |
 
 ## Instalación
 
-1. Clona el repositorio:
-   ```bash
-   git clone https://github.com/condoriluis/fms-bo.git
-   cd fms-bo
-   ```
-
-2. Instala las dependencias:
-   ```bash
-   npm install
-   ```
-
-3. Copia el archivo de ejemplo y configura tus variables de entorno:
-   ```bash
-   cp .env.example .env
-   ```
-
-4. Genera el cliente de Prisma:
-   ```bash
-   npx prisma generate
-   ```
-
-5. Inicia el servidor de desarrollo:
-   ```bash
-   npm run dev
-   ```
+```bash
+git clone https://github.com/condoriluis/fms-bo.git
+cd fms-bo
+npm install
+cp .env.example .env   # Configurar variables de entorno
+npx prisma generate
+npm run dev
+```
 
 ## Variables de entorno
 
-Crea un archivo `.env` en la raíz del proyecto. Consulta `.env.example` para ver todas las variables necesarias. **Nunca subas tus credenciales reales a GitHub.**
+Ver `.env.example` para todas las variables requeridas. Incluye conexión a PostgreSQL, claves de AWS S3, Cloudinary, Mailchimp y `AUTH_SECRET`.
 
-Variables requeridas:
-- `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase Auth
-- `DATABASE_URL` y `DIRECT_URL` — Conexión directa PostgreSQL para Prisma
-- Credenciales de AWS S3, Cloudinary y Mailchimp según los servicios que uses
+## Scripts
 
-## Estructura del proyecto
-
-```
-src/
-├── app/
-│   ├── (home)/          # Página principal y componentes de UI
-│   └── api/             # Rutas API (archivos, storage)
-├── components/          # Componentes reutilizables (Header, Footer, Auth)
-├── lib/
-│   ├── prisma.ts        # Cliente Prisma global
-│   └── supabase/        # Cliente Supabase (auth)
-└── styles/              # Estilos globales
-```
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build producción |
+| `npm run start` | Servidor producción |
+| `npm run lint` | Linter |
+| `npm run format` | Formatear código |
+| `npm run db:seed` | Poblar base de datos |
 
 ## Licencia
 
-MIT © [condoriluis](https://github.com/condoriluis)
+MIT
