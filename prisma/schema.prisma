@@ -9,16 +9,16 @@ datasource db {
 }
 
 model File {
-  id_file           BigInt    @id @default(autoincrement())
-  name_file         String?
-  name_folder_file  String?
-  extension_file    String?
-  type_file         String?
-  size_file         Decimal?  @db.Decimal
-  url_file          String?
-  id_mailchimp      Decimal?  @db.Decimal
-  date_created_file DateTime  @default(now()) @db.Timestamptz(6)
-  date_updated_file DateTime? @db.Timestamptz(6)
+  id_file           Int       @id @default(autoincrement())
+  name_file         String
+  name_folder_file  String
+  extension_file    String
+  type_file         String
+  size_file         Int
+  url_file          String
+  id_mailchimp      Int?
+  date_created_file DateTime  @default(now())
+  date_updated_file DateTime  @updatedAt
 
   @@map("files")
 }
