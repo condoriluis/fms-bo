@@ -18,7 +18,7 @@ model File {
   url_file          String
   id_mailchimp      Int?
   date_created_file DateTime  @default(now())
-  date_updated_file DateTime  @updatedAt
+  date_updated_file DateTime?
 
   @@map("files")
 }
