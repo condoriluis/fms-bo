@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Copy, Trash } from 'lucide-react';
 import { Button, Input, Badge, Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui';
-import { toast } from 'sonner';
 import { getFileIcon, isImageFile } from '../utils/fileIcons';
+import { FilePreviewDialog } from './FilePreviewDialog';
 
 interface FileGridProps {
     displayedFiles: any[];
@@ -24,7 +25,10 @@ export function FileGrid({
     handleCopy,
     handleDelete
 }: FileGridProps) {
+    const [previewFile, setPreviewFile] = useState<any>(null);
+
     return (
+        <>
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {displayedFiles.length === 0 ? (
                 <div className="col-span-full text-center py-10 text-muted-foreground italic bg-muted/30 rounded-lg border border-dashed">
@@ -33,7 +37,11 @@ export function FileGrid({
             ) : (
                 displayedFiles.map(file => (
                     <div key={file.id_file || file.id_temp} className="group relative bg-card text-card-foreground rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden">
-                        <div className="aspect-square w-full relative bg-muted/50 overflow-hidden flex items-center justify-center">
+                        <button
+                            type="button"
+                            onClick={() => file.url_file && setPreviewFile(file)}
+                            className="aspect-square w-full relative bg-muted/50 overflow-hidden flex items-center justify-center cursor-pointer hover:brightness-95 transition-all"
+                        >
                             {isImageFile(file.extension_file) ? (
                                 <img
                                     src={file.preview}
@@ -87,7 +95,7 @@ export function FileGrid({
                             </Badge>
                             </div>
                            
-                        </div>
+                        </button>
 
                         <div className="p-3 flex flex-col gap-2 flex-1">
                             <div className="flex gap-1">
@@ -154,21 +162,19 @@ export function FileGrid({
                                             </DialogFooter>
                                         </DialogContent>
                                     </Dialog>
-                                ) : (
-                                    <Button
-                                        variant="secondary"
-                                        size="icon"
-                                        className="h-6 w-6 text-muted-foreground hover:text-destructive cursor-pointer"
-                                        onClick={() => toast.warning('No tienes permiso para realizar esta acción')}
-                                    >
-                                        <Trash className="w-3 h-3 text-destructive" />
-                                    </Button>
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     </div>
                 ))
             )}
         </div>
+
+        <FilePreviewDialog
+            file={previewFile}
+            open={!!previewFile}
+            onOpenChange={(open) => { if (!open) setPreviewFile(null); }}
+        />
+        </>
     );
 }

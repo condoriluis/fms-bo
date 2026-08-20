@@ -84,7 +84,9 @@ export async function DELETE(req: NextRequest) {
       },
     });
 
-    if (!res.ok) {
+    // Un 404 indica que el archivo remoto ya no existe. En ese caso se puede
+    // eliminar con seguridad su registro local para que no quede un archivo huérfano.
+    if (!res.ok && res.status !== 404) {
       const data = await res.json();
       throw new Error(data.detail || 'Error deleting file from Mailchimp');
     }

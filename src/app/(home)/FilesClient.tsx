@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { useState } from "react"
 import { FileTable } from "./components/FileTable"
 import { FileGrid } from "./components/FileGrid"
+import { FilePreviewDialog } from "./components/FilePreviewDialog"
 import { getFileIcon, isImageFile } from "./utils/fileIcons"
 import { type FileRecord } from "@/lib/file-service"
 
@@ -18,6 +19,7 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
   const isAdmin = user?.role === "ADMIN"
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [previewFile, setPreviewFile] = useState<any>(null)
 
   const handleUpdateFileName = async (file: any, newName: string) => {
     if (!isAdmin) {
@@ -322,15 +324,21 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
                 <div key={file.id_file || file.id_temp} className="bg-card text-card-foreground p-4 rounded-lg border shadow-sm flex flex-col gap-4">
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      {isImageFile(file.extension_file) ? (
-                        <img
-                          src={file.preview}
-                          alt={file.name_file}
-                          className="w-20 h-20 object-cover rounded-md border bg-muted"
-                        />
-                      ) : (
-                        getFileIcon(file.extension_file, 'sm')
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => file.url_file && setPreviewFile(file)}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        {isImageFile(file.extension_file) ? (
+                          <img
+                            src={file.preview}
+                            alt={file.name_file}
+                            className="w-20 h-20 object-cover rounded-md border bg-muted"
+                          />
+                        ) : (
+                          getFileIcon(file.extension_file, 'sm')
+                        )}
+                      </button>
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-2">
                       <div className="flex gap-2">
@@ -496,6 +504,12 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
           )}
         </div>
       </div>
+
+      <FilePreviewDialog
+        file={previewFile}
+        open={!!previewFile}
+        onOpenChange={(open) => { if (!open) setPreviewFile(null) }}
+      />
     </main>
   )
 }

@@ -5,12 +5,18 @@ export class FileService {
         const data = await db.file.findMany({
             orderBy: { date_created_file: "desc" }
         });
-        return data;
+        return data.map(f => ({
+            ...f,
+            id_file: Number(f.id_file),
+            size_file: f.size_file !== null ? Number(f.size_file) : null,
+            id_mailchimp: f.id_mailchimp !== null ? Number(f.id_mailchimp) : null,
+        }));
     }
 
     static async getFileById(id_file: number) {
+        const numId = Number(id_file);
         const data = await db.file.findUnique({
-            where: { id_file: BigInt(id_file) }
+            where: { id_file: numId }
         });
         if (!data) throw new Error("File not found");
         return {
@@ -37,16 +43,18 @@ export class FileService {
     }
 
     static async updateFileName(id_file: number, name_file: string) {
+        const numId = Number(id_file);
         await db.file.update({
-            where: { id_file: BigInt(id_file) },
+            where: { id_file: numId },
             data: { name_file }
         });
         return 1;
     }
 
     static async deleteFile(id_file: number) {
+        const numId = Number(id_file);
         await db.file.delete({
-            where: { id_file: BigInt(id_file) }
+            where: { id_file: numId }
         });
         return 1;
     }

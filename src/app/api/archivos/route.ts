@@ -2,6 +2,10 @@ import { NextResponse } from "next/server"
 import { FileService } from "./FileService"
 import { auth } from "@/lib/auth"
 
+function isValidFileId(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0
+}
+
 // GET: ver archivos (público)
 export async function GET() {
   try {
@@ -21,7 +25,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  if (!body.name_file || !body.name_folder_file || !body.extension_file || !body.type_file || !body.size_file || !body.url_file) {
+  if (!body.name_file || !body.name_folder_file || !body.extension_file || !body.type_file || typeof body.size_file !== "number" || body.size_file < 0 || !body.url_file) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
   }
 
@@ -36,7 +40,7 @@ export async function POST(req: Request) {
       body.id_mailchimp ?? null
     )
 
-    const newFile = await FileService.getFileById(newFileId.id_file)
+    const newFile = await FileService.getFileById(Number(newFileId.id_file))
     return NextResponse.json(newFile, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: "Error al crear archivo" }, { status: 500 })
@@ -52,10 +56,11 @@ export async function PATCH(req: Request) {
   }
 
   const { id_file, name_file } = await req.json()
-  if (!id_file || !name_file) return NextResponse.json({ error: "Faltan campos" }, { status: 400 })
+  const numId = Number(id_file)
+  if (!isValidFileId(numId) || typeof name_file !== "string" || !name_file.trim()) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 })
 
   try {
-    await FileService.updateFileName(Number(id_file), name_file)
+    await FileService.updateFileName(numId, name_file.trim())
     return NextResponse.json({ ok: true })
   } catch (error) {
     return NextResponse.json({ error: "Error al actualizar" }, { status: 500 })
@@ -71,10 +76,11 @@ export async function DELETE(req: Request) {
   }
 
   const { id_file } = await req.json()
-  if (!id_file) return NextResponse.json({ error: "Faltan campos" }, { status: 400 })
+  const numId = Number(id_file)
+  if (!isValidFileId(numId)) return NextResponse.json({ error: "ID de archivo inválido" }, { status: 400 })
 
   try {
-    await FileService.deleteFile(Number(id_file))
+    await FileService.deleteFile(numId)
     return NextResponse.json({ ok: true })
   } catch (error) {
     return NextResponse.json({ error: "Error al eliminar archivo" }, { status: 500 })

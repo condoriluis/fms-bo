@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Copy, Trash } from 'lucide-react';
 import { Button, Input, Badge, Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui';
-import { toast } from 'sonner';
 import { getFileIcon, isImageFile } from '../utils/fileIcons';
+import { FilePreviewDialog } from './FilePreviewDialog';
 
 interface FileTableProps {
     displayedFiles: any[];
@@ -24,6 +25,8 @@ export function FileTable({
     handleCopy,
     handleDelete
 }: FileTableProps) {
+    const [previewFile, setPreviewFile] = useState<any>(null);
+
     return (
         <div className="hidden md:block overflow-x-auto rounded-lg border-1 bg-white dark:bg-neutral-900">
             <table className="min-w-full table-auto border-collapse">
@@ -54,7 +57,11 @@ export function FileTable({
                                 </td>
                                 <td className="px-4 py-2">
                                     <div className="flex items-center gap-3">
-                                        <div className="group flex-shrink-0 flex items-center justify-center w-24 h-24 rounded-lg border border-gray-200 dark:border-neutral-700 shadow-sm bg-muted overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => file.url_file && setPreviewFile(file)}
+                                            className="group flex-shrink-0 flex items-center justify-center w-24 h-24 rounded-lg border border-gray-200 dark:border-neutral-700 shadow-sm bg-muted overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                                        >
                                             {isImageFile(file.extension_file) ? (
                                                 <img
                                                     src={file.preview}
@@ -66,7 +73,7 @@ export function FileTable({
                                                     {getFileIcon(file.extension_file, 'md')}
                                                 </div>
                                             )}
-                                        </div>
+                                        </button>
                                     </div>
                                 </td>
                                 <td className="px-4 py-2">
@@ -196,7 +203,7 @@ export function FileTable({
                                                 <Copy className="w-4 h-4" />
                                             </Button>
 
-                                            {user ? (
+                                            {user && (
                                                 <Dialog>
                                                     <DialogTrigger asChild>
                                                         <Button
@@ -228,17 +235,6 @@ export function FileTable({
                                                         </DialogFooter>
                                                     </DialogContent>
                                                 </Dialog>
-                                            ) : (
-                                                <Button
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    onClick={() => {
-                                                        toast.warning('No tienes permiso para realizar esta acción');
-                                                    }}
-                                                    className="mt-4 h-8 w-8 rounded-full cursor-pointer"
-                                                >
-                                                    <Trash className="w-4 h-4 text-destructive" />
-                                                </Button>
                                             )}
                                         </>
                                     )}
@@ -250,6 +246,12 @@ export function FileTable({
                 </tbody>
 
             </table>
+
+            <FilePreviewDialog
+                file={previewFile}
+                open={!!previewFile}
+                onOpenChange={(open) => { if (!open) setPreviewFile(null); }}
+            />
         </div>
     );
 }

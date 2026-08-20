@@ -180,11 +180,10 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
     if (!selectedFiles.length) return toast.error('Selecciona archivos primero');
     setUploading(true);
 
-    const urls: string[] = [];
-
     try {
-
       const uploadedFiles: UploadFile[] = [];
+      const uploadedTempIds = new Set<string>();
+      const failedFiles: string[] = [];
 
       for (const file of selectedFiles) {
         setUploadingProgress(prev => ({ ...prev, [file.name_file]: 0 }));
@@ -243,55 +242,66 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
 
         const apiEndpoint = `/api/storage/${folderApiMap[folder]}`;
 
-        const result = await uploadFile(
-          folder === 'Mailchimp' ? '/api/storage/mailchimp' : apiEndpoint
-        );
+        try {
+          const result = await uploadFile(
+            folder === 'Mailchimp' ? '/api/storage/mailchimp' : apiEndpoint
+          );
 
-        const createResponse = await fetch('/api/archivos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name_file: file.name_file.replace(/\.[^/.]+$/, ''),
-            name_folder_file: folder,
-            extension_file: file.name_file.split('.').pop(),
-            type_file: file.type_file,
-            size_file: file.size_file,
-            url_file: result.url,
-            id_mailchimp: result.mailchimpId ? Number(result.mailchimpId) : null,
-            date_updated_file: new Date(),
-          }),
-        });
+          const createResponse = await fetch('/api/archivos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name_file: file.name_file.replace(/\.[^/.]+$/, ''),
+              name_folder_file: folder,
+              extension_file: file.name_file.split('.').pop(),
+              type_file: file.type_file,
+              size_file: file.size_file,
+              url_file: result.url,
+              id_mailchimp: result.mailchimpId ? Number(result.mailchimpId) : null,
+            }),
+          });
 
-        const createdFile = await createResponse.json();
+          const createdFile = await createResponse.json();
+          if (!createResponse.ok) {
+            throw new Error(createdFile.error || 'No se pudo registrar el archivo');
+          }
 
-        const adaptedFile: UploadFile = {
-          id_file: createdFile.id_file,
-          name_file: createdFile.name_file,
-          name_folder_file: createdFile.name_folder_file,
-          extension_file: `.${createdFile.extension_file.replace(/^\./, '')}`,
-          type_file: createdFile.type_file,
-          size_file: createdFile.size_file,
-          size_file_display: formatBytes(createdFile.size_file),
-          url_file: createdFile.url_file,
-          id_mailchimp: createdFile.id_mailchimp,
-          date_updated_file: createdFile.date_updated_file ?? createdFile.date_created_file ?? new Date(),
-          __originalName: createdFile.name_file,
-          preview: createdFile.url_file,
-        };
-        uploadedFiles.push(adaptedFile);
-        setUploadingProgress(prev => ({ ...prev, [file.name_file]: 100 }));
+          uploadedFiles.push({
+            id_file: createdFile.id_file,
+            name_file: createdFile.name_file,
+            name_folder_file: createdFile.name_folder_file,
+            extension_file: `.${createdFile.extension_file.replace(/^\./, '')}`,
+            type_file: createdFile.type_file,
+            size_file: createdFile.size_file,
+            size_file_display: formatBytes(createdFile.size_file),
+            url_file: createdFile.url_file,
+            id_mailchimp: createdFile.id_mailchimp,
+            date_updated_file: createdFile.date_updated_file ?? createdFile.date_created_file ?? new Date(),
+            __originalName: createdFile.name_file,
+            preview: createdFile.url_file,
+          });
+          if (file.id_temp) uploadedTempIds.add(file.id_temp);
+          setUploadingProgress(prev => ({ ...prev, [file.name_file]: 100 }));
+        } catch (error) {
+          failedFiles.push(file.name_file);
+          setUploadingProgress(prev => ({ ...prev, [file.name_file]: 0 }));
+        }
 
       }
 
-      toast.success('Archivos subidos correctamente');
-
-      setFiles(prev => [...uploadedFiles, ...prev])
-      setSelectedFiles([]);
-      setChoosingFolder(false);
+      if (uploadedFiles.length) {
+        setFiles(prev => [...uploadedFiles, ...prev]);
+        setSelectedFiles(prev => prev.filter(file => !file.id_temp || !uploadedTempIds.has(file.id_temp)));
+      }
+      if (failedFiles.length) {
+        toast.error(`No se pudieron subir: ${failedFiles.join(', ')}`);
+      } else {
+        toast.success('Archivos subidos correctamente');
+      }
+      if (!failedFiles.length) setChoosingFolder(false);
       setUploadingProgress({});
-    } catch (err) {
-      const errorMessage = typeof err === 'string' ? err : 'Error al subir los archivos';
-      toast.error(errorMessage);
+    } catch {
+      toast.error('Error al preparar la subida de archivos');
     }
 
     setUploading(false);
@@ -307,17 +317,25 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
         case 'Mailchimp': endpoint = '/api/storage/mailchimp'; break;
       }
 
-      await fetch(endpoint, {
+      const storageResponse = await fetch(endpoint, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileUrl: file.url_file, idMailchimp: file.id_mailchimp }),
       });
+      if (!storageResponse.ok) {
+        const error = await storageResponse.json().catch(() => null);
+        throw new Error(error?.error || 'No se pudo eliminar el archivo del almacenamiento');
+      }
 
-      await fetch(`/api/archivos`, {
+      const deleteResponse = await fetch(`/api/archivos`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_file: file.id_file }),
       });
+      if (!deleteResponse.ok) {
+        const error = await deleteResponse.json().catch(() => null);
+        throw new Error(error?.error || 'No se pudo eliminar el registro del archivo');
+      }
 
       setFiles(prev => prev.filter(f => f.id_file !== file.id_file));
       toast.success('Archivo eliminado correctamente');
