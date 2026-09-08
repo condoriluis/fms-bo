@@ -1,9 +1,11 @@
-import { db } from "@/lib/db"
+import { db, withRetry } from "@/lib/db"
 
 export const getFiles = async () => {
-    const files = await db.file.findMany({
-        orderBy: { date_created_file: "desc" }
-    })
+    const files = await withRetry(() =>
+        db.file.findMany({
+            orderBy: { date_created_file: "desc" }
+        })
+    )
     return files.map(f => ({
         ...f,
         id_file: Number(f.id_file),
