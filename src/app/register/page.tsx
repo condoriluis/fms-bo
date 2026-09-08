@@ -3,6 +3,8 @@ import RegisterForm from './RegisterForm'
 import { hasExistingAdmin } from '@/actions/auth'
 import { auth } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export default async function RegisterPage() {
   // Verifica si ya hay un admin
   const hasAdmin = await hasExistingAdmin()
