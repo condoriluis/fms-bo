@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     const url = `${process.env.NEXT_PUBLIC_SITE_URL}/assets/images/${safeFileName}`;
     return NextResponse.json({ url });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Error al subir el archivo' }, { status: 500 });
   }
 }
@@ -93,7 +93,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Error al eliminar el archivo' }, { status: 500 });
   }
 }

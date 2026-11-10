@@ -95,7 +95,7 @@ export async function registerAction(values: z.infer<typeof registerSchema>) {
     }
 
     return { success: true }
-  } catch (error) {
+  } catch {
     return { error: 'Ocurrió un error al crear el usuario' }
   }
 }

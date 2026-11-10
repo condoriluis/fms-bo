@@ -4,9 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { getFileIcon, isImageFile } from "../utils/fileIcons"
 import { Download, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui"
+import type { UploadFile } from "@/lib/constants/typeFile"
 
 interface FilePreviewDialogProps {
-  file: any
+  file: UploadFile | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }

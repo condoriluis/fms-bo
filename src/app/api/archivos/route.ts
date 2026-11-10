@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const files = await FileService.getFiles()
     return NextResponse.json(files)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error al obtener archivos" }, { status: 500 })
   }
 }
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     const newFile = await FileService.getFileById(Number(newFileId.id_file))
     return NextResponse.json(newFile, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error al crear archivo" }, { status: 500 })
   }
 }
@@ -62,7 +62,7 @@ export async function PATCH(req: Request) {
   try {
     await FileService.updateFileName(numId, name_file.trim())
     return NextResponse.json({ ok: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error al actualizar" }, { status: 500 })
   }
 }
@@ -82,7 +82,7 @@ export async function DELETE(req: Request) {
   try {
     await FileService.deleteFile(numId)
     return NextResponse.json({ ok: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Error al eliminar archivo" }, { status: 500 })
   }
 }

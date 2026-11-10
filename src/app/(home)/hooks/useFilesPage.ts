@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { UploadFile } from '@/lib/constants/typeFile';
 import { type FileRecord } from '@/lib/file-service';
+import { uploadToStorage, type StorageFolder } from '@/lib/uploads';
 
 export function useFilesPage(initialFiles: FileRecord[] = []) {
   const formatBytes = (bytes: number) => {
@@ -34,7 +35,7 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
 
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [folder, setFolder] = useState<'Server' | 'AWS S3' | 'Cloudinary' | 'Mailchimp' | 'Vimeo'>('Server');
+  const [folder, setFolder] = useState<StorageFolder>('Server');
   const [filterBy, setFilterBy] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [, setChoosingFolder] = useState(false);
@@ -46,13 +47,8 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
     Object.fromEntries(folderList.map(f => [f, true]))
   );
 
-  // Eliminamos el useEffect que hacía el fetch inicial
-  // ya que ahora la data viene directamente del servidor de forma instantánea.
-
-
-
   const combinedFiles: UploadFile[] = [
-    ...selectedFiles.map((file, i) => ({
+    ...selectedFiles.map(file => ({
       id_file: 0,
       id_temp: file.id_temp ?? crypto.randomUUID(),
       name_file: file.name_file.replace(/\.[^/.]+$/, ''),
@@ -202,159 +198,10 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
           continue;
         }
 
-        if (!file.__originalFile) continue;
-        const originalFile = file.__originalFile as File;
-
-        // XHR genérico con progreso para subidas directas desde el navegador
-        const xhrUpload = (
-          method: string,
-          url: string,
-          body: FormData | File,
-          headers: Record<string, string> = {}
-        ): Promise<XMLHttpRequest> => {
-          return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open(method, url);
-            Object.entries(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v));
-
-            xhr.upload.onprogress = (event) => {
-              if (event.lengthComputable) {
-                const percent = Math.round((event.loaded / event.total) * 100);
-                setUploadingProgress(prev => ({ ...prev, [file.name_file]: percent }));
-              }
-            };
-
-            xhr.onload = () => {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                resolve(xhr);
-              } else {
-                try {
-                  const errorResponse = JSON.parse(xhr.responseText);
-                  reject(errorResponse.error || `Error ${xhr.status}: ${xhr.statusText}`);
-                } catch {
-                  reject(`Error ${xhr.status}: ${xhr.statusText}`);
-                }
-              }
-            };
-
-            xhr.onerror = () => reject('Error de red');
-            xhr.send(body);
-          });
-        };
-
-        // Subida por API propia (Server, AWS S3, Mailchimp)
-        const uploadFile = (endpoint: string): Promise<{ url: string; mailchimpId?: string }> => {
-          const formData = new FormData();
-          formData.append('file', originalFile);
-
-          return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', endpoint);
-
-            xhr.upload.onprogress = (event) => {
-              if (event.lengthComputable) {
-                const percent = Math.round((event.loaded / event.total) * 100);
-                setUploadingProgress(prev => ({ ...prev, [file.name_file]: percent }));
-              }
-            };
-
-            xhr.onload = () => {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                const response = JSON.parse(xhr.responseText);
-
-                if (folder === 'Mailchimp') {
-                  const url = response.url;
-                  const mailchimpId = response.id;
-                  if (!url || !mailchimpId) reject('No se obtuvo URL o ID de Mailchimp');
-                  resolve({ url, mailchimpId });
-                } else {
-                  resolve({ url: response.url });
-                }
-
-              } else {
-
-                try {
-                  const errorResponse = JSON.parse(xhr.responseText);
-                  reject(errorResponse.error || 'Error al subir el archivo');
-                } catch {
-                  reject(`Error ${xhr.status}: ${xhr.statusText}`);
-                }
-              }
-            };
-
-            xhr.onerror = () => reject('Error de red');
-            xhr.send(formData);
-          });
-        };
-
-        // Subida DIRECTA a Cloudinary (firma pedida a nuestra API, el archivo
-        // no pasa por Vercel: límite de 4.5MB en el body de las functions)
-        const uploadCloudinary = async (): Promise<{ url: string }> => {
-          const sigRes = await fetch('/api/storage/cloudinary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fileName: originalFile.name, mimeType: file.type_file }),
-          });
-          const sig = await sigRes.json();
-          if (!sigRes.ok) throw new Error(sig.error || 'No se pudo firmar la subida');
-
-          const cloudinaryForm = new FormData();
-          cloudinaryForm.append('file', originalFile);
-          cloudinaryForm.append('api_key', sig.apiKey);
-          cloudinaryForm.append('timestamp', sig.timestamp);
-          cloudinaryForm.append('folder', 'files');
-          cloudinaryForm.append('public_id', sig.publicId);
-          cloudinaryForm.append('signature', sig.signature);
-
-          const xhr = await xhrUpload(
-            'POST',
-            `https://api.cloudinary.com/v1_1/${sig.cloudName}/${sig.resourceType}/upload`,
-            cloudinaryForm
-          );
-          const response = JSON.parse(xhr.responseText);
-          if (!response.secure_url) throw new Error('No se obtuvo la URL de Cloudinary');
-          return { url: response.secure_url };
-        };
-
-        // Subida DIRECTA a Vimeo: la API crea el video y devuelve el upload_link
-        // (tus); el navegador manda los bytes con PATCH sin exponer el token
-        const uploadVimeo = async (): Promise<{ url: string }> => {
-          const createRes = await fetch('/api/storage/vimeo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: file.name_file, size: file.size_file }),
-          });
-          const video = await createRes.json();
-          if (!createRes.ok) throw new Error(video.error || 'No se pudo crear el video en Vimeo');
-
-          await xhrUpload('PATCH', video.uploadLink, originalFile, {
-            'Tus-Resumable': '1.0.0',
-            'Upload-Offset': '0',
-            'Content-Type': 'application/offset+octet-stream',
-          });
-
-          if (!video.url) throw new Error('No se obtuvo la URL de Vimeo');
-          return { url: video.url };
-        };
-
-        const folderApiMap: Record<string, string> = {
-          Server: 'server',
-          'AWS S3': 's3',
-          Cloudinary: 'cloudinary',
-          Mailchimp: 'mailchimp',
-          Vimeo: 'vimeo',
-        };
-
         try {
-          let result: { url: string; mailchimpId?: string };
-
-          if (folder === 'Cloudinary') {
-            result = await uploadCloudinary();
-          } else if (folder === 'Vimeo') {
-            result = await uploadVimeo();
-          } else {
-            result = await uploadFile(`/api/storage/${folderApiMap[folder]}`);
-          }
+          const result = await uploadToStorage(folder, file, (percent) =>
+            setUploadingProgress(prev => ({ ...prev, [file.name_file]: percent }))
+          );
 
           const createResponse = await fetch('/api/archivos', {
             method: 'POST',
@@ -391,7 +238,7 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
           });
           if (file.id_temp) uploadedTempIds.add(file.id_temp);
           setUploadingProgress(prev => ({ ...prev, [file.name_file]: 100 }));
-        } catch (error) {
+        } catch {
           failedFiles.push(file.name_file);
           setUploadingProgress(prev => ({ ...prev, [file.name_file]: 0 }));
         }
@@ -450,7 +297,7 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
       setFiles(prev => prev.filter(f => f.id_file !== file.id_file));
       toast.success('Archivo eliminado correctamente');
 
-    } catch (err) {
+    } catch {
       toast.error('Error eliminando archivo');
     }
   };

@@ -88,7 +88,7 @@ export async function DELETE(req: NextRequest) {
     await cloudinary.uploader.destroy(publicId);
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
   }
 }

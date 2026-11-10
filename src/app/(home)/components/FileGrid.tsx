@@ -3,16 +3,17 @@ import { Copy, Trash } from 'lucide-react';
 import { Button, Input, Badge, Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui';
 import { getFileIcon, isImageFile } from '../utils/fileIcons';
 import { FilePreviewDialog } from './FilePreviewDialog';
+import type { UploadFile } from '@/lib/constants/typeFile';
 
 interface FileGridProps {
-    displayedFiles: any[];
-    user: any;
-    setFiles: React.Dispatch<React.SetStateAction<any[]>>;
-    handleUpdateFileName: (file: any, newName: string) => void;
+    displayedFiles: UploadFile[];
+    user?: { role?: string | null };
+    setFiles: React.Dispatch<React.SetStateAction<UploadFile[]>>;
+    handleUpdateFileName: (file: UploadFile, newName: string) => void;
     uploading: boolean;
-    setSelectedFiles: React.Dispatch<React.SetStateAction<any[]>>;
+    setSelectedFiles: React.Dispatch<React.SetStateAction<UploadFile[]>>;
     handleCopy: (link: string) => void;
-    handleDelete: (file: any) => void;
+    handleDelete: (file: UploadFile) => void;
 }
 
 export function FileGrid({
@@ -25,7 +26,7 @@ export function FileGrid({
     handleCopy,
     handleDelete
 }: FileGridProps) {
-    const [previewFile, setPreviewFile] = useState<any>(null);
+    const [previewFile, setPreviewFile] = useState<UploadFile | null>(null);
 
     return (
         <>

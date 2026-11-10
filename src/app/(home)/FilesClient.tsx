@@ -12,6 +12,8 @@ import { FileGrid } from "./components/FileGrid"
 import { FilePreviewDialog } from "./components/FilePreviewDialog"
 import { getFileIcon, isImageFile } from "./utils/fileIcons"
 import { type FileRecord } from "@/lib/file-service"
+import { type UploadFile } from "@/lib/constants/typeFile"
+import { type StorageFolder } from "@/lib/uploads"
 
 export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
   const { data: session } = useSession()
@@ -19,9 +21,9 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
   const isAdmin = user?.role === "ADMIN"
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [previewFile, setPreviewFile] = useState<any>(null)
+  const [previewFile, setPreviewFile] = useState<UploadFile | null>(null)
 
-  const handleUpdateFileName = async (file: any, newName: string) => {
+  const handleUpdateFileName = async (file: UploadFile, newName: string) => {
     if (!isAdmin) {
       toast.warning("No tienes permiso para realizar esta acción")
       return
@@ -45,7 +47,7 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
       )
 
       toast.success('Nombre actualizado correctamente')
-    } catch (err) {
+    } catch {
       toast.error('No se pudo actualizar el nombre')
     }
   }
@@ -176,7 +178,7 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
                 <TooltipProvider>
                   <RadioGroup
                     value={folder}
-                    onValueChange={(value: 'Server' | 'AWS S3' | 'Cloudinary' | 'Mailchimp' | 'Vimeo') =>
+                    onValueChange={(value: StorageFolder) =>
                       setFolder(value)
                     }
                     className="flex flex-wrap gap-2 sm:gap-4"

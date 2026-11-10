@@ -12,8 +12,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "preview": "next build && next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write --cache './src/**/*.{ts,tsx,js,jsx,json}'",
     "build:registry:internal": "tsx --tsconfig ./tsconfig.scripts.json ./src/scripts/build-registry.mts",
     "build:registry:external": "shadcn build ./src",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.879.0",
+    "@aws-sdk/s3-request-presigner": "^3.879.0",
     "@hookform/resolvers": "^5.2.2",
     "@mailchimp/mailchimp_marketing": "^3.0.80",
     "@prisma/client": "^6.19.3",

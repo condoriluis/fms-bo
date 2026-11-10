@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@/lib/auth';
 
 const s3 = new S3Client({
@@ -10,9 +11,18 @@ const s3 = new S3Client({
   },
 });
 
+function sanitizeFileName(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9.\-_]/g, '');
+}
+
+// POST: genera una presigned URL para que el navegador suba directo a S3
+// (las functions de Vercel tienen límite de 4.5MB en el body, el archivo no debe pasar por aquí)
 export async function POST(req: NextRequest) {
   try {
-
     const session = await auth();
 
     if (!session?.user) {
@@ -22,37 +32,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-    if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    const bucket = process.env.AWS_BUCKET_NAME;
+    const region = process.env.AWS_REGION;
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    if (!bucket || !region || !accessKeyId) {
+      return NextResponse.json({ error: 'Falta la configuración de AWS S3' }, { status: 400 });
+    }
 
-    const apiKey = process.env.AWS_ACCESS_KEY_ID;
-    if (!apiKey) return NextResponse.json({ error: 'Falta la KEY ID de AWS' }, { status: 400 });
+    const body = await req.json();
+    const fileName = typeof body?.fileName === 'string' ? body.fileName : '';
+    const contentType = typeof body?.contentType === 'string' ? body.contentType : '';
+    if (!fileName || !contentType) {
+      return NextResponse.json({ error: 'Se requiere fileName y contentType' }, { status: 400 });
+    }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const key = `uploads/${file.name}`;
+    const key = `uploads/${Date.now()}-${sanitizeFileName(fileName)}`;
 
-    await s3.send(
+    const uploadUrl = await getSignedUrl(
+      s3,
       new PutObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME!,
+        Bucket: bucket,
         Key: key,
-        Body: buffer,
-        ContentType: file.type,
+        ContentType: contentType,
         ACL: 'public-read',
-      })
+      }),
+      { expiresIn: 300 }
     );
 
-    const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 
-    return NextResponse.json({ url });
-  } catch (err) {
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    return NextResponse.json({ uploadUrl, publicUrl });
+  } catch {
+    return NextResponse.json({ error: 'No se pudo generar la URL de subida' }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
-
     const session = await auth();
 
     if (!session?.user) {
@@ -62,24 +78,24 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    const bucket = process.env.AWS_BUCKET_NAME;
+    if (!bucket) return NextResponse.json({ error: 'Falta la configuración de AWS S3' }, { status: 400 });
+
     const { fileUrl } = await req.json();
     if (!fileUrl) return NextResponse.json({ error: 'No fileUrl provided' }, { status: 400 });
-
-    const apiKey = process.env.AWS_ACCESS_KEY_ID;
-    if (!apiKey) return NextResponse.json({ error: 'Falta la KEY ID de AWS' }, { status: 400 });
 
     const url = new URL(fileUrl);
     const key = url.pathname.substring(1);
 
     await s3.send(
       new DeleteObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME!,
+        Bucket: bucket,
         Key: key,
       })
     );
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
   }
 }

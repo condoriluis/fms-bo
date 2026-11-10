@@ -3,24 +3,24 @@ export const getFileIcon = (extension: string, size: 'sm' | 'md' | 'lg' = 'md') 
 
     const sizeClasses = {
         sm: 'w-20 h-20',
-        md: 'w-24 h-24',
-        lg: 'w-32 h-32'
+        md: 'w-18 h-22',
+        lg: 'w-24 h-24'
     };
 
     const iconSize = sizeClasses[size];
 
     switch (ext) {
         case 'pdf':
-            return <img src="assets/images/icons/pdf.png" className="w-18 h-22" alt={ext} />;
+            return <img src="assets/images/icons/pdf.png" className={iconSize} alt={ext} />;
         case 'zip':
-            return <img src="assets/images/icons/zip.png" className="w-18 h-22" alt={ext} />;
+            return <img src="assets/images/icons/zip.png" className={iconSize} alt={ext} />;
         case 'txt':
-            return <img src="assets/images/icons/txt.png" className="w-18 h-22" alt={ext} />;
+            return <img src="assets/images/icons/txt.png" className={iconSize} alt={ext} />;
         case 'mp3':
         case 'wav':
-            return <img src="assets/images/icons/mpeg.png" className="w-18 h-22" alt={ext} />;
+            return <img src="assets/images/icons/mpeg.png" className={iconSize} alt={ext} />;
         default:
-            return <img src="assets/images/icons/default.png" className="w-18 h-22" alt={ext} />;
+            return <img src="assets/images/icons/default.png" className={iconSize} alt={ext} />;
     }
 };
 
