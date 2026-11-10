@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { parseVimeoId, vimeoHeaders } from '@/lib/vimeo';
 
 const VIMEO_API = 'https://api.vimeo.com';
-
-function vimeoHeaders(token: string, extra: Record<string, string> = {}) {
-  return {
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/vnd.vimeo.*+json;version=3.4',
-    ...extra,
-  };
-}
 
 // POST: crea el video en Vimeo y devuelve el upload_link para que el
 // navegador suba los bytes directo con tus PATCH
@@ -43,6 +36,9 @@ export async function POST(req: NextRequest) {
       headers: vimeoHeaders(accessToken, { 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         name,
+        // Público explícito para que el enlace sea visible sin importar los
+        // valores por defecto de privacidad de la cuenta
+        privacy: { view: 'anybody' },
         upload: { approach: 'tus', size },
       }),
     });
@@ -88,12 +84,12 @@ export async function DELETE(req: NextRequest) {
     }
 
     // El id del video se extrae de la URL guardada (https://vimeo.com/{id})
-    const match = String(fileUrl).match(/vimeo\.com\/(?:video\/)?(\d+)/);
-    if (!match) {
+    const videoId = parseVimeoId(String(fileUrl));
+    if (!videoId) {
       return NextResponse.json({ error: 'URL de Vimeo no válida' }, { status: 400 });
     }
 
-    const res = await fetch(`${VIMEO_API}/videos/${match[1]}`, {
+    const res = await fetch(`${VIMEO_API}/videos/${videoId}`, {
       method: 'DELETE',
       headers: vimeoHeaders(accessToken),
     });

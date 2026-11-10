@@ -22,6 +22,7 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
     size_file: f.size_file ?? 0,
     size_file_display: formatBytes(f.size_file ?? 0),
     url_file: f.url_file ?? '',
+    thumbnail_vimeo_file: f.thumbnail_vimeo_file ?? null,
     id_mailchimp: f.id_mailchimp ?? undefined,
     date_updated_file: f.date_updated_file ?? new Date(),
 
@@ -231,6 +232,7 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
             size_file: createdFile.size_file,
             size_file_display: formatBytes(createdFile.size_file),
             url_file: createdFile.url_file,
+            thumbnail_vimeo_file: createdFile.thumbnail_vimeo_file ?? null,
             id_mailchimp: createdFile.id_mailchimp,
             date_updated_file: createdFile.date_updated_file ?? createdFile.date_created_file ?? new Date(),
             __originalName: createdFile.name_file,
@@ -253,6 +255,11 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
         toast.error(`No se pudieron subir: ${failedFiles.join(', ')}`);
       } else {
         toast.success('Archivos subidos correctamente');
+        if (folder === 'Vimeo' && uploadedFiles.length) {
+          toast.info('Vimeo procesa el video unos minutos; el enlace es visible cuando termina', {
+            duration: 8000,
+          });
+        }
       }
       if (!failedFiles.length) setChoosingFolder(false);
       setUploadingProgress({});

@@ -69,6 +69,12 @@ export function FileTable({
                                                     alt={file.name_file}
                                                     className="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110"
                                                 />
+                                            ) : file.thumbnail_vimeo_file ? (
+                                                <img
+                                                    src={file.thumbnail_vimeo_file}
+                                                    alt={file.name_file}
+                                                    className="w-full h-full object-cover rounded-lg transition-transform duration-300 group-hover:scale-110"
+                                                />
                                             ) : (
                                                 <div className="transition-transform duration-300 group-hover:scale-110">
                                                     {getFileIcon(file.extension_file, 'md')}

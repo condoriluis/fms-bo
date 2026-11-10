@@ -7,6 +7,7 @@ export type UploadFile = {
   type_file: string;
   size_file: number;
   url_file: string;
+  thumbnail_vimeo_file?: string | null;
   id_mailchimp?: number;
   date_created_file?: Date;
   date_updated_file: Date;

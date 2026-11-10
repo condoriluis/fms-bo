@@ -49,6 +49,12 @@ export function FileGrid({
                                     alt={file.name_file}
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
+                            ) : file.thumbnail_vimeo_file ? (
+                                <img
+                                    src={file.thumbnail_vimeo_file}
+                                    alt={file.name_file}
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
                             ) : (
                                 getFileIcon(file.extension_file, 'md')
                             )}

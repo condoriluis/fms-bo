@@ -173,6 +173,17 @@ async function uploadToVimeo(
     onProgress
   );
 
+  // Verificación tus (paso 3 de la documentación de Vimeo): el upload está
+  // completo solo cuando Upload-Offset alcanzó a Upload-Length
+  const head = await fetch(ticket.uploadLink, {
+    method: 'HEAD',
+    headers: { 'Tus-Resumable': '1.0.0' },
+  });
+  const uploadedBytes = Number(head.headers.get('upload-offset'));
+  if (!head.ok || uploadedBytes !== file.size) {
+    throw new Error('Vimeo no confirmó la subida completa del video');
+  }
+
   if (!ticket.url) throw new Error('No se obtuvo la URL de Vimeo');
   return { url: ticket.url };
 }
