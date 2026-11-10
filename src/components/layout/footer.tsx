@@ -61,6 +61,7 @@ export const Footer: React.FC = () => {
               { label: "AWS S3", color: "text-orange-400" },
               { label: "Cloudinary", color: "text-blue-400" },
               { label: "Mailchimp", color: "text-yellow-500" },
+              { label: "Vimeo", color: "text-sky-400" },
             ].map((tech, i, arr) => (
               <span key={tech.label} className="flex items-center gap-1.5">
                 <span className={`text-xs font-semibold ${tech.color}`}>{tech.label}</span>

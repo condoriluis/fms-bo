@@ -17,7 +17,9 @@ export function FilePreviewDialog({ file, open, onOpenChange }: FilePreviewDialo
   const ext = (file.extension_file || "").toLowerCase().replace(".", "")
   const isImage = isImageFile(file.extension_file)
   const isPdf = ext === "pdf"
-  const isVideo = file.type_file?.startsWith("video/")
+    const isVideo = file.type_file?.startsWith("video/")
+    const isVimeo = /vimeo\.com\/(?:video\/)?(\d+)/.test(file.url_file ?? "")
+    const vimeoId = file.url_file?.match(/vimeo\.com\/(?:video\/)?(\d+)/)?.[1]
   const isAudio = file.type_file?.startsWith("audio/")
   const isText = ext === "txt"
 
@@ -41,6 +43,20 @@ export function FilePreviewDialog({ file, open, onOpenChange }: FilePreviewDialo
           className="w-full h-[70vh] rounded-md border"
           title={file.name_file}
         />
+      )
+    }
+
+    if (isVimeo && vimeoId) {
+      return (
+        <div className="flex items-center justify-center w-full p-2">
+          <iframe
+            src={`https://player.vimeo.com/video/${vimeoId}`}
+            className="w-full aspect-video max-h-[70vh] rounded-md border"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            title={file.name_file}
+          />
+        </div>
       )
     }
 

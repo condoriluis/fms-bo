@@ -65,12 +65,17 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
       'Cloudinary': {
         title: 'Cloudinary CDN',
         description: 'Optimizado para multimedia',
-        formats: 'Imágenes, Videos, Audio, PDF, ZIP'
+        formats: 'Imágenes, Videos (MP4, MOV, AVI, MKV, WebM... máx 100MB en plan Free), Audio, PDF, ZIP'
       },
       'Mailchimp': {
         title: 'Mailchimp',
         description: 'Solo archivos de marketing (máx 10MB)',
         formats: 'Imágenes, PDF, TXT, ZIP (No videos)'
+      },
+      'Vimeo': {
+        title: 'Vimeo',
+        description: 'Plataforma de video (requiere token con permisos de subida)',
+        formats: 'MP4, MOV, AVI, MKV, WebM, WMV (solo videos)'
       }
     }
     return info[folderName as keyof typeof info]
@@ -159,7 +164,7 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
           <input
             type="file"
             multiple
-            accept=".jpg, .jpeg, .png, .gif, .webp, .mp3, .wav, .pdf, .zip, .txt"
+            accept=".jpg, .jpeg, .png, .gif, .webp, .mp4, .webm, .mov, .avi, .mkv, .wmv, .mpeg, .ogv, .mp3, .wav, .aac, .m4a, .flac, .pdf, .zip, .txt"
             id="file-input"
             onChange={handleFileChange}
             className="hidden"
@@ -171,7 +176,7 @@ export function FilesClient({ initialFiles }: { initialFiles: FileRecord[] }) {
                 <TooltipProvider>
                   <RadioGroup
                     value={folder}
-                    onValueChange={(value: 'Server' | 'AWS S3' | 'Cloudinary' | 'Mailchimp') =>
+                    onValueChange={(value: 'Server' | 'AWS S3' | 'Cloudinary' | 'Mailchimp' | 'Vimeo') =>
                       setFolder(value)
                     }
                     className="flex flex-wrap gap-2 sm:gap-4"

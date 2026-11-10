@@ -34,14 +34,14 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
 
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [folder, setFolder] = useState<'Server' | 'AWS S3' | 'Cloudinary' | 'Mailchimp'>('Server');
+  const [folder, setFolder] = useState<'Server' | 'AWS S3' | 'Cloudinary' | 'Mailchimp' | 'Vimeo'>('Server');
   const [filterBy, setFilterBy] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [, setChoosingFolder] = useState(false);
   const [, setUploadingProgress] = useState<Record<string, number>>({});
   const [isDragging, setIsDragging] = useState(false);
 
-  const folderList = ['Server', 'AWS S3', 'Cloudinary', 'Mailchimp'];
+  const folderList = ['Server', 'AWS S3', 'Cloudinary', 'Mailchimp', 'Vimeo'];
   const [folderFilters, setFolderFilters] = useState<Record<string, boolean>>(
     Object.fromEntries(folderList.map(f => [f, true]))
   );
@@ -120,7 +120,9 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
     const filesArray = Array.from(e.target.files);
     const allowedTypes = [
       'image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif',
-      'audio/mpeg', 'audio/wav',
+      'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo',
+      'video/x-matroska', 'video/x-ms-wmv', 'video/ogg', 'video/mpeg', 'video/3gpp',
+      'audio/mpeg', 'audio/wav', 'audio/aac', 'audio/mp4', 'audio/ogg', 'audio/flac',
       'application/pdf',
       'application/zip', 'application/x-zip-compressed',
       'text/plain'
@@ -188,6 +190,18 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
       for (const file of selectedFiles) {
         setUploadingProgress(prev => ({ ...prev, [file.name_file]: 0 }));
 
+        const isVideoFile = (file.type_file ?? '').startsWith('video/');
+        if (folder === 'Vimeo' && !isVideoFile) {
+          failedFiles.push(file.name_file);
+          toast.error('Vimeo solo acepta archivos de video');
+          continue;
+        }
+        if (folder === 'Mailchimp' && isVideoFile) {
+          failedFiles.push(file.name_file);
+          toast.error('Mailchimp no acepta videos (máx 10MB, solo archivos de marketing)');
+          continue;
+        }
+
         const formData = new FormData();
         if (!file.__originalFile) continue;
         formData.append('file', file.__originalFile as Blob);
@@ -238,6 +252,7 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
           'AWS S3': 's3',
           Cloudinary: 'cloudinary',
           Mailchimp: 'mailchimp',
+          Vimeo: 'vimeo',
         };
 
         const apiEndpoint = `/api/storage/${folderApiMap[folder]}`;
@@ -315,6 +330,7 @@ export function useFilesPage(initialFiles: FileRecord[] = []) {
         case 'AWS S3': endpoint = '/api/storage/s3'; break;
         case 'Cloudinary': endpoint = '/api/storage/cloudinary'; break;
         case 'Mailchimp': endpoint = '/api/storage/mailchimp'; break;
+        case 'Vimeo': endpoint = '/api/storage/vimeo'; break;
       }
 
       const storageResponse = await fetch(endpoint, {
