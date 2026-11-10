@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 const VIMEO_API = 'https://api.vimeo.com';
-const TUS_CHUNK_SIZE = 256 * 1024 * 1024; // 256 MB
 
 function vimeoHeaders(token: string, extra: Record<string, string> = {}) {
   return {
@@ -12,6 +11,9 @@ function vimeoHeaders(token: string, extra: Record<string, string> = {}) {
   };
 }
 
+// POST: crea el video en Vimeo y devuelve el upload_link para que el
+// navegador suba los bytes directo con tus PATCH
+// (las functions de Vercel tienen límite de 4.5MB en el body, el archivo no debe pasar por aquí)
 export async function POST(req: NextRequest) {
   const session = await auth();
 
@@ -27,28 +29,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Falta el ACCESS TOKEN de Vimeo' }, { status: 400 });
   }
 
-  const formData = await req.formData();
-  const file = formData.get('file') as File;
+  const body = await req.json().catch(() => ({}));
+  const name = body.name as string | undefined;
+  const size = Number(body.size);
 
-  if (!file) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-  }
-
-  if (!file.type.startsWith('video/')) {
-    return NextResponse.json(
-      { error: 'Vimeo solo acepta archivos de video (MP4, MOV, AVI, MKV, WebM, WMV)' },
-      { status: 400 }
-    );
+  if (!name || !Number.isFinite(size) || size <= 0) {
+    return NextResponse.json({ error: 'Se requiere name y size del video' }, { status: 400 });
   }
 
   try {
-    // Paso 1: crear el video y obtener el link de subida (approach tus)
     const createRes = await fetch(`${VIMEO_API}/me/videos`, {
       method: 'POST',
       headers: vimeoHeaders(accessToken, { 'Content-Type': 'application/json' }),
       body: JSON.stringify({
-        name: file.name.replace(/\.[^/.]+$/, ''),
-        upload: { approach: 'tus', size: file.size },
+        name,
+        upload: { approach: 'tus', size },
       }),
     });
 
@@ -63,34 +58,8 @@ export async function POST(req: NextRequest) {
       throw new Error('No se obtuvo el link de subida de Vimeo');
     }
 
-    // Paso 2: enviar los bytes del video con PATCH (protocolo tus, reanudable)
-    const buffer = Buffer.from(await file.arrayBuffer());
-    let offset = 0;
-
-    while (offset < buffer.length) {
-      const end = Math.min(offset + TUS_CHUNK_SIZE, buffer.length);
-      const patchRes = await fetch(uploadLink, {
-        method: 'PATCH',
-        headers: {
-          'Tus-Resumable': '1.0.0',
-          'Upload-Offset': String(offset),
-          'Content-Type': 'application/offset+octet-stream',
-        },
-        body: buffer.subarray(offset, end),
-      });
-
-      if (!patchRes.ok) {
-        throw new Error(`Error subiendo el video a Vimeo (HTTP ${patchRes.status})`);
-      }
-
-      const confirmed = Number(patchRes.headers.get('upload-offset') ?? end);
-      if (confirmed <= offset && end < buffer.length) {
-        throw new Error('Vimeo no confirmó los bytes subidos');
-      }
-      offset = confirmed;
-    }
-
-    return NextResponse.json({ url: videoUrl });
+    // El upload_link se autentica solo (ticket firmado); el token NO se expone al navegador
+    return NextResponse.json({ uploadLink, url: videoUrl });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Upload failed' },

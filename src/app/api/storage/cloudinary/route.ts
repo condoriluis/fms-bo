@@ -8,6 +8,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// POST: firma los parámetros para que el navegador suba directo a Cloudinary
+// (las functions de Vercel tienen límite de 4.5MB en el body, el archivo no debe pasar por aquí)
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -19,39 +21,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-
-    if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-
     const apiKey = process.env.CLOUDINARY_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: 'Falta la API KEY de Cloudinary' }, { status: 400 });
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const mimeType = file.type;
-    const fileName = file.name;
-
-    let resource_type: "image" | "video" | "audio" | "raw" = "raw";
-
-    if (mimeType.startsWith("image/")) {
-      resource_type = "image";
-    } else if (mimeType.startsWith("video/") || mimeType.startsWith("audio/")) {
-      resource_type = "video";
-    } else {
-      resource_type = "raw";
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    if (!apiKey || !cloudName || !apiSecret) {
+      return NextResponse.json({ error: 'Faltan las credenciales de Cloudinary' }, { status: 400 });
     }
 
-    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream({ folder: 'files', resource_type, public_id: fileName.replace(/\.[^/.]+$/, ""), }, (err, res) => {
-        if (err) reject(err);
-        else resolve(res as any);
-      });
-      stream.end(buffer);
-    });
+    const body = await req.json();
+    const fileName = body.fileName as string | undefined;
+    const mimeType = body.mimeType as string | undefined;
+    if (!fileName) return NextResponse.json({ error: 'No fileName provided' }, { status: 400 });
 
-    return NextResponse.json({ url: result.secure_url });
-  } catch (err) {
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    let resource_type: 'image' | 'video' | 'raw' = 'raw';
+
+    if (mimeType?.startsWith('image/')) {
+      resource_type = 'image';
+    } else if (mimeType?.startsWith('video/') || mimeType?.startsWith('audio/')) {
+      resource_type = 'video';
+    }
+
+    const public_id = fileName.replace(/\.[^/.]+$/, '');
+    const timestamp = Math.round(Date.now() / 1000);
+
+    // Solo los parámetros enviados en el FormData (excepto file, api_key y cloud_name) se firman
+    const signature = cloudinary.utils.api_sign_request(
+      { folder: 'files', public_id, timestamp },
+      apiSecret
+    );
+
+    return NextResponse.json({
+      signature,
+      timestamp,
+      apiKey,
+      cloudName,
+      publicId: public_id,
+      resourceType: resource_type,
+    });
+  } catch {
+    return NextResponse.json({ error: 'Signature failed' }, { status: 500 });
   }
 }
 
