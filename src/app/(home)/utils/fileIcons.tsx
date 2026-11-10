@@ -1,3 +1,9 @@
+const AUDIO_EXTENSIONS = new Set(['mp3', 'wav', 'aac', 'm4a', 'flac', 'ogg']);
+const VIDEO_EXTENSIONS = new Set([
+    'mp4', 'webm', 'mov', 'avi', 'mkv', 'wmv', 'mpeg', 'mpg', 'ogv',
+    '3gp', '3g2', 'm4v', 'flv', 'ts', 'm2ts', 'mts',
+]);
+
 export const getFileIcon = (extension: string, size: 'sm' | 'md' | 'lg' = 'md') => {
     const ext = extension.toLowerCase().replace('.', '');
 
@@ -16,10 +22,10 @@ export const getFileIcon = (extension: string, size: 'sm' | 'md' | 'lg' = 'md') 
             return <img src="assets/images/icons/zip.png" className={iconSize} alt={ext} />;
         case 'txt':
             return <img src="assets/images/icons/txt.png" className={iconSize} alt={ext} />;
-        case 'mp3':
-        case 'wav':
-            return <img src="assets/images/icons/mpeg.png" className={iconSize} alt={ext} />;
         default:
+            if (AUDIO_EXTENSIONS.has(ext) || VIDEO_EXTENSIONS.has(ext)) {
+                return <img src="assets/images/icons/mpeg.png" className={iconSize} alt={ext} />;
+            }
             return <img src="assets/images/icons/default.png" className={iconSize} alt={ext} />;
     }
 };
